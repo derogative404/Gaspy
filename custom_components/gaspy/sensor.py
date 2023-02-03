@@ -113,7 +113,7 @@ class GaspyFuelPriceSensor(Entity):
             if response['data']:
                 _LOGGER.debug(response['data'])
                 for station in response['data']:
-                    self._state = station['current_price']
+                    self._state = station['current_price'] / 100
                     
                     self._state_attributes['Fuel Type Name'] = station['fuel_type_name']
                     self._state_attributes['Station Name'] = station['station_name']
