@@ -1,0 +1,11 @@
+{
+  "domain": "gaspy",
+  "name": "Gaspy Fuel Price",
+  "version": "1.0.0",
+  "documentation": "https://github.com/codyc1515/hacs_gaspy",
+  "issue_tracker": "https://github.com/codyc15/hacs_gaspy/issues",
+  "codeowners": ["@codyc1515"],
+  "requirements": [],
+  "iot_class": "cloud_polling",
+  "dependencies": []
+}
