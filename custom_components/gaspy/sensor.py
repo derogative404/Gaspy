@@ -60,7 +60,7 @@ async def async_setup_platform(hass, config, async_add_entities,
 class GaspyFuelPriceSensor(Entity):
     def __init__(self, name, api):
         self._name = name
-        self._icon = "mdi:fuel"
+        self._icon = "mdi:gas-station"
         self._state = ""
         self._state_attributes = {}
         self._state_class = "measurement"
