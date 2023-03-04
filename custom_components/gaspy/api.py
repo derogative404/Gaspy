@@ -7,9 +7,10 @@ import json
 _LOGGER = logging.getLogger(__name__)
 
 class GaspyApi:
-    def __init__(self, username, password, latitude, longitude):
+    def __init__(self, username, password, distance, latitude, longitude):
         self._username = username
         self._password = password
+        self._distance = distance
         self._latitude = latitude
         self._longitude = longitude
         self._session = requests.Session()
@@ -21,7 +22,7 @@ class GaspyApi:
         }
         data = {
             'device_type': 'A',
-            'distance': '20.0',
+            'distance': self._distance,
             'fuel_type_id': 3,
             'is_mock_location': 'false',
             'latitude': self._latitude,

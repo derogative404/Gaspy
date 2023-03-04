@@ -6,7 +6,7 @@ import voluptuous as vol
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_MAXIMUM, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.helpers.entity import Entity
 
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -36,6 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_USERNAME): cv.string,
     vol.Required(CONF_PASSWORD): cv.string,
+    vol.Required(CONF_MAXIMUM): vol.All(vol.Coerce(float), vol.Range(min=1.0, max=100.0)),
     vol.Required(CONF_LATITUDE): cv.string,
     vol.Required(CONF_LONGITUDE): cv.string
 })
@@ -46,10 +47,11 @@ async def async_setup_platform(hass, config, async_add_entities,
                                discovery_info=None):
     username = config.get(CONF_USERNAME)
     password = config.get(CONF_PASSWORD)
+    distance = config.get(CONF_MAXIMUM)
     latitude = config.get(CONF_LATITUDE)
     longitude = config.get(CONF_LONGITUDE)
 
-    api = GaspyApi(username, password, latitude, longitude)
+    api = GaspyApi(username, password, distance, latitude, longitude)
 
     _LOGGER.debug('Setting up sensor(s)...')
 
@@ -113,42 +115,19 @@ class GaspyFuelPriceSensor(Entity):
             if response['data']:
                 _LOGGER.debug(response['data'])
                 for station in response['data']:
+                    # Avoid updating the price (state) if the price is still the same or we will get duplicate notifications
+                    if self._state == float(station['current_price']) / 100:
+                        break
+                    
                     self._state = float(station['current_price']) / 100
                     
                     self._state_attributes['Fuel Type Name'] = station['fuel_type_name']
                     self._state_attributes['Station Name'] = station['station_name']
                     self._state_attributes['Distance'] = station['distance']
-                    self._state_attributes['Last Upated'] = station['date_updated']
+                    self._state_attributes['Last Updated'] = station['date_updated']
                     
+                    # Because we are ordering by lowest price in the API call, to get the lowest price we only ever need the first result
                     break
-                    
-                    # Delivery statuses
-                    '''if order['orderStatus'] == 'PENDING':
-                        self._state = "Received"
-                    elif order['orderStatus'] == 'UNASSIGNED':
-                        self._state = "Out for delivery"
-                    elif order['orderStatus'] == 'ASSIGNED':
-                        self._state = "Arriving"
-                    elif order['orderStatus'] == 'COMPLETE':
-                        self._state = "Delivered"
-
-                    # Not sure if this is used for delivery
-                    elif order['orderStatus'] == 'FAILEDCOMPLETE':
-                        self._state = "Delivery failed"
-
-                    # Not sure if these are used (maybe for pickup?)
-                    elif order['orderStatus'] == 'READY':
-                        self._state = "Order ready"
-                    elif order['orderStatus'] == 'OMW':
-                        self._state = "Driver on way"
-                    else:
-                        self._state = "Unknown orderStatus (" + order['orderStatus'] + ")"
-
-                    self._state_attributes['Order Number'] = order['orderNumber']
-                    self._state_attributes['Order Date'] = order['orderDate']
-                    self._state_attributes['Pickup Start'] = order['pickupStart']
-                    self._state_attributes['Pickup End'] = order['pickupEnd']
-                    '''
             else:
                 self._state = "None"
                 _LOGGER.debug('Found no prices on refresh')
