@@ -5,8 +5,8 @@ import os
 
 # Initialize the GaspyApi with your credentials and location
 gaspy_api = GaspyApi(
-    username="sebastianthomas588@gmail.com",
-    password="Se8mritgl;",
+    username=os.getenv('EMAIL'),
+    password=os.getenv('PASSWORD'),
     distance="10",  # Search radius in kilometers
     latitude="-36.8485",  # Example latitude for Auckland
     longitude="174.7633"  # Example longitude for Auckland
